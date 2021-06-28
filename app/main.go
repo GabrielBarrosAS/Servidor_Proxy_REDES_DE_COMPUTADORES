@@ -1,30 +1,30 @@
 /*
 ==========================================INFORMAÇÕES PARA AVALIAÇÃO==========================================
-XX	Passo 1: Encaminhar solicitações e respostas HTTP sem armazenamento em cache                            XX
-XX						Este item foi completamente implementado no trabalho, é                             XX
-XX						possível acessar as páginas web por meio de nosso servidor proxy                    XX
+XX  Passo 1: Encaminhar solicitações e respostas HTTP sem armazenamento em cache                            XX
+XX                      Este item foi completamente implementado no trabalho, é                             XX
+XX                      possível acessar as páginas web por meio de nosso servidor proxy                    XX
 XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-XX	Passo 2: Habilite o servidor TCP para lidar com conexões simultâneas                                    XX
-XX						Este item foi completamente implementado, por meio das técnicas                     XX
-XX						mostradas em sala com a utilização das goroutines. Um exemplo                       XX
-XX						de múltiplos acessos pode ser visto quando acessamos a página                       XX
-XX						do sigaa enquanto estamos navegando na página de Kurose                             XX
+XX  Passo 2: Habilite o servidor TCP para lidar com conexões simultâneas                                    XX
+XX                      Este item foi completamente implementado, por meio das técnicas                     XX
+XX                      mostradas em sala com a utilização das goroutines. Um exemplo                       XX
+XX                      de múltiplos acessos pode ser visto quando acessamos a página                       XX
+XX                      do sigaa enquanto estamos navegando na página de Kurose                             XX
 XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-XX	Passo 3: Habilitar cache                                                                                XX
-XX						Este item foi completamente implementado, nossos registros de                       XX
-XX						requisições ficam salvos na lista global cache em tempo de                          XX
-XX						execução, e persitem no arquivo cache.txt presente dentro da                        XX
-XX						pasta app, fazendo a manipulação de arquivos em go                                  XX
+XX  Passo 3: Habilitar cache                                                                                XX
+XX                      Este item foi completamente implementado, nossos registros de                       XX
+XX                      requisições ficam salvos na lista global cache em tempo de                          XX
+XX                      execução, e persitem no arquivo cache.txt presente dentro da                        XX
+XX                      pasta app, fazendo a manipulação de arquivos em go                                  XX
 XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-XX	Passo 4: Fazer com que os itens do cache expirem                                                        XX
-XX						Este item foi completamente implementado, na apresentação é                         XX
-XX						possível identificar a abordagem e tratamento de tempo que                          XX
-XX						foram abordados na realização do trabalho prático 1                                 XX
+XX  Passo 4: Fazer com que os itens do cache expirem                                                        XX
+XX                      Este item foi completamente implementado, na apresentação é                         XX
+XX                      possível identificar a abordagem e tratamento de tempo que                          XX
+XX                      foram abordados na realização do trabalho prático 1                                 XX
 XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-XX	Passo 5: Modifique a resposta HTTP                                                                      XX
-XX						Não conseguimos implementar este item em sua totalidade até                         XX
-XX						o prazo final de entrega, assim optamos por remover em                              XX
-XX						totalidade a programação relacionada ao passo 5                                     XX
+XX  Passo 5: Modifique a resposta HTTP                                                                      XX
+XX                      Não conseguimos implementar este item em sua totalidade até                         XX
+XX                      o prazo final de entrega, assim optamos por remover em                              XX
+XX                      totalidade a programação relacionada ao passo 5                                     XX
 XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 */
 package main

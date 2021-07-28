@@ -50,7 +50,7 @@ type no struct {
 	url       string
 	nome      string
 	diretorio string
-	tempo     int                                                        //Estrutura elaborada para registrar cada requisição na cache
+	tempo     int //Estrutura elaborada para registrar cada requisição na cache
 	content   []byte
 	ip        string
 }
@@ -58,102 +58,139 @@ type no struct {
 var cache []no
 
 func main() {
-	carregarCache()                                                     //Carregando os registrps que foram criados em execuções anteriores
+	carregarCache() //Carregando os registrps que foram criados em execuções anteriores
 	servidor()
 }
 
 func servidor() {
 	var addr, _ = net.ResolveTCPAddr("tcp", ":"+CONN_PORT)
-	server, err := net.ListenTCP(CONN_TYPE, addr)                       // Servidor escutando no localhost na porta definida
+	server, err := net.ListenTCP(CONN_TYPE, addr) // Servidor escutando no localhost na porta definida
 
 	if err != nil {
 		fmt.Println("Error listening:", err.Error())
 		os.Exit(1)
 	}
 
-	defer server.Close()                                                // Garantindo que a conexão vai ser encerrada
+	defer server.Close() // Garantindo que a conexão vai ser encerrada
 
-	
-	fmt.Println("Esperando conexão em " + CONN_HOST + ":" + CONN_PORT)  //Indicativo de inicizalização do server
+	fmt.Println("Esperando conexão em " + CONN_HOST + ":" + CONN_PORT) //Indicativo de inicizalização do server
 
 	for {
-		conn, err := server.Accept()                                    // Em loop esperando alguma conexão a ser aceita
+		conn, err := server.Accept() // Em loop esperando alguma conexão a ser aceita
 		if err != nil {
 			fmt.Println("Error accepting: ", err.Error())
 			os.Exit(1)
 		}
-		go handleRequest(conn)                                          // Tratando cada conexão em thread
+		go handleRequest(conn) // Tratando cada conexão em thread
 	}
 
 }
 
 func handleRequest(connBrowser net.Conn) {
 
-	defer connBrowser.Close()                                           // Garantindo que a conexão será finalizada
-	var resultCliente [10000]byte                                       // Array para receber a requisição
-	connBrowser.Read(resultCliente[0:])                                 // Lendo a requisição do navegador
+	fmt.Println("==============================NAVEGADOR CONECTADO==============================")
 
-	
-	url := getURLNavegador(string(resultCliente[0:]))                   //==========================================
-	nome, diretorio := separaURL(url)                                   //Extraindo informações vindas da requisição
-	tempo := getTime()                                                  //==========================================
+	defer connBrowser.Close()           // Garantindo que a conexão será finalizada
+	var resultCliente [10000]byte       // Array para receber a requisição
+	connBrowser.Read(resultCliente[0:]) // Lendo a requisição do navegador
 
-	noBuscado := procuraCache(nome, diretorio)                          //Verificando se existe registro igual na cache
+	url := getURLNavegador(string(resultCliente[0:])) //==========================================
+	nome, diretorio := separaURL(url)                 //Extraindo informações vindas da requisição
+	tempo := getTime()                                //==========================================
 
-	if noBuscado != nil {                                               //ENCONTRAMOS A MESMA REQUISIÇÃO NA MEMÓRIA CACHE
+	noBuscado := procuraCache(nome, diretorio) //Verificando se existe registro igual na cache
+
+	if noBuscado != nil { //ENCONTRAMOS A MESMA REQUISIÇÃO NA MEMÓRIA CACHE
+
+		fmt.Println("==============================RECUPERANDO DA CACHE==============================")
+		fmt.Println("URL REQUISITADA: " + noBuscado.url)
+		fmt.Println("HOST: " + noBuscado.nome)
+		fmt.Println("CAMINHO: " + noBuscado.diretorio)
+		fmt.Println("ENDERECO IP: " + noBuscado.ip)
+		fmt.Print("ACESSADO EM: ")
+		fmt.Println(noBuscado.tempo)
 
 		param, _ := strconv.Atoi(os.Args[1])
 
-		if noBuscado.tempo+param > getTime() {                          //Se está dentro do limite de tempo retorna o mesmo conteudo
+		if (noBuscado.tempo + param) > getTime() { //Se está dentro do limite de tempo retorna o mesmo conteudo
+
+			fmt.Println("==============================AINDA ESTÁ VÁLIDO==============================")
 
 			connBrowser.Write([]byte(noBuscado.content))
 
-		} else {                                                        //Se expirou, usa a conexão externa no servidor que contém a resposta
+		} else { //Se expirou, usa a conexão externa no servidor que contém a resposta
+
+			fmt.Println("==============================NÃO ESTÁ VÁLIDO==============================")
 
 			conexaoExterna(noBuscado, connBrowser, 0)
 
 		}
 	} else {
 
-		novo := no{                                                     //===============================================================
-			url:       url,                                             //===============================================================
-			nome:      nome,                                            // Criando um novo elemento para a cache e definindo seus valores
-			diretorio: diretorio,                                       //===============================================================
-			tempo:     tempo,                                           //===============================================================
+		novo := no{ //===============================================================
+			url:       url,       //===============================================================
+			nome:      nome,      // Criando um novo elemento para a cache e definindo seus valores
+			diretorio: diretorio, //===============================================================
+			tempo:     tempo,     //===============================================================
 		}
 
-		novo.ip = urlParaIp(novo.nome)                                  // Convertendo o endereço URL em ip
+		novo.ip = urlParaIp(novo.nome) // Convertendo o endereço URL em ip
+
+		fmt.Println("==============================CRIANDO NOVO REGISTRO==============================")
+		fmt.Println("URL REQUISITADA: " + novo.url)
+		fmt.Println("HOST: " + novo.nome)
+		fmt.Println("CAMINHO: " + novo.diretorio)
+		fmt.Println("ENDERECO IP: " + novo.ip)
+		fmt.Print("ACESSADO EM: ")
+		fmt.Println(novo.tempo)
 
 		conexaoExterna(&novo, connBrowser, 1)
 	}
-	gravarCache()                                                       //grava tudo que está no vetor CACHE no arquivo "cache.txt"
+	gravarCache() //grava tudo que está no vetor CACHE no arquivo "cache.txt"
 }
 
 func conexaoExterna(node *no, connBrowser net.Conn, key int) {
 	if node.ip != "" {
-		serviceRequisitado := node.ip + ":80"                           //novoNO.ip + ":80"
-		tcpAddr, _ := net.ResolveTCPAddr("tcp4", serviceRequisitado)    //Conectando ao server externo
-		connServer, _ := net.DialTCP("tcp", nil, tcpAddr)               //Conectando ao server externo
 
-		requisicao := "GET " + node.diretorio + " HTTP/1.0\r\n\r\n"     //Montando a requisição
+		fmt.Println("==============================CONEXÃO EXTERNA==============================")
 
-		_, _ = connServer.Write([]byte(requisicao))                     //Requisitando ao server externo
+		serviceRequisitado := node.ip + ":80"                        //novoNO.ip + ":80"
+		tcpAddr, _ := net.ResolveTCPAddr("tcp4", serviceRequisitado) //Conectando ao server externo
+		connServer, _ := net.DialTCP("tcp", nil, tcpAddr)            //Conectando ao server externo
 
-		resultServer, _ := ioutil.ReadAll(connServer)                   //Lendo tudo que vem do server externo
+		requisicao := "GET " + node.diretorio + " HTTP/1.0\r\n\r\n" //Montando a requisição
 
-		connBrowser.Write([]byte(resultServer[0:]))                     //Enviando a resposta ao navegador
-		node.content = resultServer                                     // Salvando no elemento da cache o conteudo retornado
+		_, _ = connServer.Write([]byte(requisicao)) //Requisitando ao server externo
+
+		resultServer, _ := ioutil.ReadAll(connServer) //Lendo tudo que vem do server externo
+
+		connBrowser.Write([]byte(resultServer[0:])) //Enviando a resposta ao navegador
+		node.content = resultServer                 // Salvando no elemento da cache o conteudo retornado
 
 		if key == 1 {
-			cache = append(cache, *node)                                //Inserindo na cache
+			cache = append(cache, *node) //Inserindo na cache
 		} else {
-			node.tempo = getTime()                                      //Atuzalizando tempo de um registro que já estava na cache
+			node.tempo = getTime() //Atuzalizando tempo de um registro que já estava na cache
 		}
+	} else {
+		fmt.Println("==============================NAO GERA IP VÁLIDO==============================")
 	}
 
-	connBrowser.Close()                                                 //Encerrando a conexão com o navegador
+	connBrowser.Close() //Encerrando a conexão com o navegador
 
-	gravarCache()                                                       //grava tudo que está no vetor CACHE no arquivo "cache.txt"
+	fmt.Println("==============================ESTADO ATUAL DA CACHE==============================")
+	for i := 0; i < len(cache); i++ {
+		fmt.Println("URL REQUISITADA: " + cache[i].url)
+		fmt.Println("HOST: " + cache[i].nome)
+		fmt.Println("CAMINHO: " + cache[i].diretorio)
+		fmt.Println("ENDERECO IP: " + cache[i].ip)
+		fmt.Print("ACESSADO EM: ")
+		fmt.Println(cache[i].tempo)
+		fmt.Println("==========================================================================================")
+	}
+	fmt.Println("==============================ENCERRANDO A CONEXAO==============================\n\n\n\n\n ")
+
+	gravarCache() //grava tudo que está no vetor CACHE no arquivo "cache.txt"
 }
 
 func procuraCache(nome string, diretorio string) *no {
@@ -234,7 +271,7 @@ func getTime() int {
 }
 
 func carregarCache() {
-	leitura, err := lerArquivo("cache.txt")                             //Lê o que tem no arquivo
+	leitura, err := lerArquivo("cache.txt") //Lê o que tem no arquivo
 	if err != nil {
 		log.Fatalf("Erro:", err)
 	}
@@ -295,50 +332,49 @@ func gravarCache() {
 		}
 		escreverArquivo(escrita, "cache.txt")
 	}
-
 }
 
-func lerArquivo(caminhoDoArquivo string) ([]string, error) {            // OK!
+func lerArquivo(caminhoDoArquivo string) ([]string, error) { // OK!
 
-	arquivo, err := os.Open(caminhoDoArquivo)                           // Abre o arquivo
-	if err != nil {                                                     // Caso tenha encontrado algum erro ao tentar abrir o arquivo retorne o erro encontrado
+	arquivo, err := os.Open(caminhoDoArquivo) // Abre o arquivo
+	if err != nil {                           // Caso tenha encontrado algum erro ao tentar abrir o arquivo retorne o erro encontrado
 		return nil, err
 	}
-	defer arquivo.Close()                                               // Garante que o arquivo sera fechado apos o uso
+	defer arquivo.Close() // Garante que o arquivo sera fechado apos o uso
 
 	var linhas []string
-	scanner := bufio.NewScanner(arquivo)                                // Cria um scanner que lê cada linha do arquivo
+	scanner := bufio.NewScanner(arquivo) // Cria um scanner que lê cada linha do arquivo
 	for scanner.Scan() {
 		linhas = append(linhas, scanner.Text())
 	}
 
-	return linhas, scanner.Err()                                        // Retorna as linhas lidas e um erro se ocorrer algum erro no scanner
+	return linhas, scanner.Err() // Retorna as linhas lidas e um erro se ocorrer algum erro no scanner
 }
 
 func escreverArquivo(linhas []string, caminhoDoArquivo string) error {
 
-	arquivo, err := os.Create(caminhoDoArquivo)                         // Cria o arquivo de texto. se já existir, apenas abre
-	if err != nil {                                                     // Caso tenha encontrado algum erro retornar ele
+	arquivo, err := os.Create(caminhoDoArquivo) // Cria o arquivo de texto. se já existir, apenas abre
+	if err != nil {                             // Caso tenha encontrado algum erro retornar ele
 		return err
 	}
-	defer arquivo.Close()                                               // Garante que o arquivo sera fechado apos o uso
+	defer arquivo.Close() // Garante que o arquivo sera fechado apos o uso
 
-	escritor := bufio.NewWriter(arquivo)                                // Cria um escritor responsavel por escrever cada linha do slice no arquivo de texto
+	escritor := bufio.NewWriter(arquivo) // Cria um escritor responsavel por escrever cada linha do slice no arquivo de texto
 	for _, linha := range linhas {
 		fmt.Fprintln(escritor, linha)
 	}
 
-	return escritor.Flush()                                             // Caso a funcao flush retorne um erro ele sera retornado aqui tambem
+	return escritor.Flush() // Caso a funcao flush retorne um erro ele sera retornado aqui tambem
 }
 
 func printArquivo() {
 	fmt.Println("<<<<<< CONTEÚDO DO ARQUIVO CACHE.TXT >>>>>>")
-	conteudo, err := lerArquivo("cache.txt")                            //leitura do arquivo
-	if err != nil {                                                     //verifica algum erro
+	conteudo, err := lerArquivo("cache.txt") //leitura do arquivo
+	if err != nil {                          //verifica algum erro
 		log.Fatalf("Erro:", err)
 	}
 
-	for indice, linha := range conteudo {                               //printa índice da linha e conteúdo
+	for indice, linha := range conteudo { //printa índice da linha e conteúdo
 		fmt.Println(indice, linha)
 	}
 }
